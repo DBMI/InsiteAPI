@@ -77,4 +77,6 @@ jobs:
 
       # Just run the tests using the virtual environment your local action created
       - name: Run tests
+        env:
+          PYTHONPATH: .
         run: poetry run pytest
