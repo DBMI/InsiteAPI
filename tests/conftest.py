@@ -8,6 +8,7 @@ from collections import namedtuple
 from configparser import ConfigParser
 from pathlib import Path
 
+import pandas
 import pytest
 
 from src.insiteapi.aou_package import DUMMY, AouPackage
