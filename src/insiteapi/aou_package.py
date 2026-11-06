@@ -9,7 +9,7 @@ import logging
 import os
 from configparser import ConfigParser, ExtendedInterpolation
 
-from src.insiteapi.common import ensure_path_possible  # pylint: disable=import-error
+from insiteapi.common import ensure_path_possible  # pylint: disable=import-error
 
 # String we insert into config file & GUI entries.
 DUMMY: str = "<YourNameHere>"

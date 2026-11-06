@@ -15,8 +15,8 @@ from pathlib import Path
 
 import requests
 
-from src.insiteapi.aou_package import AouPackage
-from src.insiteapi.progress import Progress
+from insiteapi.aou_package import AouPackage
+from insiteapi.progress import Progress
 
 
 def join_headers(h1: list, h2: list) -> list:

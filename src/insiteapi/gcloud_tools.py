@@ -11,7 +11,7 @@ import time
 from collections.abc import Callable
 from pathlib import Path
 
-from src.insiteapi.aou_package import AouPackage
+from insiteapi.aou_package import AouPackage
 
 
 def gcloud_tools_installed() -> bool:
