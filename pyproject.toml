@@ -1,6 +1,6 @@
 [project]
 name = "insiteapi"
-version = "0.2.8"
+version = "0.2.9"
 description = "Python library to request All of Us participant data from the National Institutes of Health web service."
 authors = [
     {name = "Kevin J. Delaney",email = "kjdelaney@health.ucsd.edu"}
@@ -23,6 +23,7 @@ packages = [{ include = "insiteapi", from = "src" }]
 [tool.poetry.dependencies]
 python = "^3.12, <4.0"
 certifi = "2024.7.4"
+configparser = ">=7.3.0, <8.0.0"
 idna = "3.7"
 logging = "0.4.9.6"
 numpy = "2.5.4"
@@ -31,17 +32,12 @@ python-dateutil = "3.0.0"
 # Windows-only baseline dependency
 pywin32 = { version = "^312", markers = "sys_platform == 'win32'" }
 pywin32-ctypes = "0.2.3"
-requests = "2.32.4"
+requests = "2.34.2"
 urllib3 = "2.5.0"
 
-[dependency-groups]
-dev = [
-    "requests-mock (>=1.12.1,<2.0.0)",
-    "configparser (>=7.3.0,<8.0.0)",
-    "pytest (>=9.2.0,<10.0.0)",
-    "requests (==2.32.4)"
-]
-
+[tool.poetry.group.dev.dependencies]
+requests-mock = "*"
+pytest = "*"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
