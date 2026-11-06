@@ -1,6 +1,6 @@
 [project]
 name = "insiteapi"
-version = "0.2.0"
+version = "0.2.1"
 description = "Python library to request All of Us participant data from the National Institutes of Health web service."
 authors = [
     {name = "Kevin J. Delaney",email = "kjdelaney@health.ucsd.edu"}
@@ -8,8 +8,17 @@ authors = [
 license = "This software is Copyright © 2026 The Regents of the University of California. All Rights Reserved. Permission to copy, modify, and distribute this software and its documentation for educational, research and non-profit purposes, without fee, and without a written agreement is hereby granted, provided that the above copyright notice, this paragraph and the following three paragraphs appear in all copies. Permission to make commercial use of this software may be obtained by contacting: Office of Innovation"
 readme = "README.md"
 requires-python = ">=3.12"
+
+[project.urls]
+documentation = "https://github.com/DBMI/InsiteAPI"
+homepage = "https://github.com/DBMI/InsiteAPI"
+repository = "https://github.com/DBMI/InsiteAPI"
+
+[tool.poetry]
+name = "insiteapi"
+package-mode = true
 # Add this line to explicitly include your src directory:
-packages = [{ include = "*", from = "src" }]
+packages = [{ include = "insiteapi", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.12, <4.0"
