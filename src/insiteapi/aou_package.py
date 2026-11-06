@@ -2,6 +2,7 @@
 Contains the AouPackage class,
     which packages up all the variables needed to request participant data.
 """
+
 from __future__ import annotations
 
 import logging

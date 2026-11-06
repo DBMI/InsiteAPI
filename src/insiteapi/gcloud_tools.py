@@ -1,6 +1,7 @@
 """
 Contains class GCLoudTools & associated static methods for GCloud authentication.
 """
+
 from __future__ import annotations
 
 import logging
