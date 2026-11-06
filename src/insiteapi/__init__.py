@@ -1,5 +1,6 @@
 from .aou_package import (  # noqa: F401
     AouPackage,
+    DUMMY,
     get_config,
     get_default_ini_path,
     make_config,
