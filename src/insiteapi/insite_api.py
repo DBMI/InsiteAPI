@@ -212,13 +212,19 @@ class InSiteAPI(threading.Thread):
                     resp = requests.get(next_url, headers=headers, timeout=60)
                 except requests.exceptions.RequestException:
                     self.__log.error("API request failed. Exiting.")
-                    self.__report_fn("API request failed. Exiting.")
+
+                    if self.__report_fn is not None:
+                        self.__report_fn("API request failed. Exiting.")
+
                     raise RuntimeError("API request failed. Exiting.")
 
                 num_reattempts += 1
             else:
                 self.__log.error(f"Have made {num_reattempts} reattempts. Exiting.")
-                self.__report_fn(f"Have made {num_reattempts} reattempts. Exiting.")
+
+                if self.__report_fn is not None:
+                    self.__report_fn(f"Have made {num_reattempts} reattempts. Exiting.")
+
                 raise RuntimeError(f"Have made {num_reattempts} reattempts. Exiting.")
 
             if resp.status_code == 200:
@@ -234,8 +240,11 @@ class InSiteAPI(threading.Thread):
                 )
             else:
                 # It's some other code--not likely to be fixed with another attempt.
-                self.__report_fn(f"Status code: {status_code}: {resp_text}.")
                 self.__log.error(f"Status code: {status_code}: {resp_text}.")
+
+                if self.__report_fn is not None:
+                    self.__report_fn(f"Status code: {status_code}: {resp_text}.")
+
                 raise RuntimeError(f"Status code: {status_code}: {resp_text}.")
 
         return ps_data
