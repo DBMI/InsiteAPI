@@ -350,12 +350,19 @@ class InSiteAPI(threading.Thread):
 
         return ps_data
 
-    def run(self) -> None:
+    def run(self, return_data: bool = False) -> dict | None:
         """
         Request data from AwardeeInSite API.
 
-        Saves result in internal variable:
-        self.data: dict by organization
+        Parameters
+        ----------
+        return_data: bool Normally False
+            when True, returns data: dict by organization
+            when False: Saves result in internal variable: self.data: dict by organization
+
+        Returns
+        -------
+            when return_data is True, returns data: dict by organization
         """
         self.__log.info("Starting InSite API object running.")
 
@@ -391,6 +398,9 @@ class InSiteAPI(threading.Thread):
 
         # Let calling function know we're done.
         self.__report_completion()
+
+        if return_data:
+            return self.__data
 
     def stop(self) -> None:
         """

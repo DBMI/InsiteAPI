@@ -1,6 +1,6 @@
 [project]
 name = "insiteapi"
-version = "0.2.9"
+version = "0.3.0"
 description = "Python library to request All of Us participant data from the National Institutes of Health web service."
 authors = [
     {name = "Kevin J. Delaney",email = "kjdelaney@health.ucsd.edu"}
