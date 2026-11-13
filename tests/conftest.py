@@ -7,6 +7,7 @@ import sys
 from collections import namedtuple
 from configparser import ConfigParser
 from pathlib import Path
+from unittest.mock import patch
 
 import pandas
 import pytest
@@ -37,14 +38,6 @@ def dummy_value() -> str:
 def fake_aou_package(logger: logging.Logger, fake_config_file: Path) -> AouPackage:
     aou_package: AouPackage = AouPackage(logger, config_file=str(fake_config_file))
     return aou_package
-
-
-@pytest.fixture(name="fake_api_request_package")
-def fake_api_request_package(
-    fake_aou_package: AouPackage, fake_token: str
-) -> ApiRequestPackage:
-    api_package = ApiRequestPackage(fake_aou_package, fake_token)
-    return api_package
 
 
 @pytest.fixture(scope="function")
@@ -377,6 +370,33 @@ def logger() -> logging.Logger:
 
     logger.setLevel(logging.DEBUG)
     return logger
+
+
+@pytest.fixture(name="mock_gcloud_check_output")
+def mock_gcloud_check_output():
+    with patch(
+        "src.insiteapi.gcloud_tools.subprocess.check_output"
+    ) as mock_check_output:
+        # A list of values:
+        # 1) for GCloudTools.__auth()
+        # 2) for GCloudTools.__create_key_file()
+        # 3) for GCloudTools.get_token()
+        mock_check_output.side_effect = [
+            "Word0\nWord1\nWord2\nWord3\nWord4\nCredentials saved\n",
+            "created key",
+            "ya0123456789",
+        ]
+        yield mock_check_output
+
+
+@pytest.fixture(name="mock_gcloud_run")
+def mock_gcloud_run():
+    with patch("src.insiteapi.gcloud_tools.subprocess.run") as mock_run:
+        # Return OK code to GCloudTools.__activate()
+        mock_run.return_value.returncode = 0
+        mock_run.return_value.stdout = "OK"
+        mock_run.return_value.stderr = ""
+        yield mock_run
 
 
 @pytest.fixture(name="nonexistent_config_file")
