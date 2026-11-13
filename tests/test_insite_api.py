@@ -9,7 +9,6 @@ import pytest
 import requests
 import requests_mock
 
-from src.insiteapi.aou_package import AouPackage
 from src.insiteapi.insite_api import InSiteAPI, join_headers, make_header
 
 
@@ -54,9 +53,16 @@ def test_make_header() -> None:
 
 
 def test_insite_api(
-    logger, fake_api_request_package, fake_json_I, fake_json_II, fake_data_directory
+    logger,
+    fake_aou_package,
+    fake_json_I,
+    fake_json_II,
+    fake_data_directory,
+    mock_gcloud_check_output,
+    mock_gcloud_run,
 ) -> None:
-    def on_auth_completion(progress: bool | int | str) -> None:
+
+    def on_data_completion(progress: bool | int | str) -> None:
         if isinstance(progress, bool):
             logger.info("Authorization complete.")
         elif isinstance(progress, int):
@@ -65,13 +71,12 @@ def test_insite_api(
             logger.info(progress)
 
     api_obj: InSiteAPI = InSiteAPI(
-        api_package=fake_api_request_package,
+        aou_package=fake_aou_package,
         log=logger,
-        report_fn=on_auth_completion,
+        report_fn=on_data_completion,
     )
     assert isinstance(api_obj, InSiteAPI)
 
-    fake_aou_package: AouPackage = fake_api_request_package.aou_package
     fake_url_I: str = (
         fake_aou_package.endpoint
         + "?_sort=lastModified&_includeTotal=TRUE&_count=1000&awardee="
@@ -120,7 +125,12 @@ def test_insite_api(
 
 
 def test_insite_api_malformed_json(
-    logger, fake_api_request_package, fake_json, fake_data_directory
+    logger,
+    fake_aou_package,
+    fake_json,
+    fake_data_directory,
+    mock_gcloud_check_output,
+    mock_gcloud_run,
 ) -> None:
     def on_auth_completion(progress: bool | int | str) -> None:
         if isinstance(progress, bool):
@@ -131,13 +141,12 @@ def test_insite_api_malformed_json(
             logger.info(progress)
 
     api_obj: InSiteAPI = InSiteAPI(
-        api_package=fake_api_request_package,
+        aou_package=fake_aou_package,
         log=logger,
         report_fn=on_auth_completion,
     )
     assert isinstance(api_obj, InSiteAPI)
 
-    fake_aou_package: AouPackage = fake_api_request_package.aou_package
     fake_url: str = (
         fake_aou_package.endpoint
         + "?_sort=lastModified&_includeTotal=TRUE&_count=1000&awardee="
@@ -154,16 +163,20 @@ def test_insite_api_malformed_json(
 
 
 def test_insite_api_no_report_fn(
-    logger, fake_api_request_package, fake_json_no_total, fake_data_directory
+    logger,
+    fake_aou_package,
+    fake_json_no_total,
+    fake_data_directory,
+    mock_gcloud_check_output,
+    mock_gcloud_run,
 ) -> None:
 
     api_obj: InSiteAPI = InSiteAPI(
-        api_package=fake_api_request_package,
+        aou_package=fake_aou_package,
         log=logger,
     )
     assert isinstance(api_obj, InSiteAPI)
 
-    fake_aou_package: AouPackage = fake_api_request_package.aou_package
     fake_url: str = (
         fake_aou_package.endpoint
         + "?_sort=lastModified&_includeTotal=TRUE&_count=1000&awardee="
@@ -193,7 +206,12 @@ def test_insite_api_no_report_fn(
 
 
 def test_insite_api_other_errors(
-    logger, fake_api_request_package, fake_json, fake_data_directory
+    logger,
+    fake_aou_package,
+    fake_json,
+    fake_data_directory,
+    mock_gcloud_check_output,
+    mock_gcloud_run,
 ) -> None:
     def on_auth_completion(progress: bool | int | str) -> None:
         if isinstance(progress, bool):
@@ -204,13 +222,12 @@ def test_insite_api_other_errors(
             logger.info(progress)
 
     api_obj: InSiteAPI = InSiteAPI(
-        api_package=fake_api_request_package,
+        aou_package=fake_aou_package,
         log=logger,
         report_fn=on_auth_completion,
     )
     assert isinstance(api_obj, InSiteAPI)
 
-    fake_aou_package: AouPackage = fake_api_request_package.aou_package
     fake_url: str = (
         fake_aou_package.endpoint
         + "?_sort=lastModified&_includeTotal=TRUE&_count=1000&awardee="
@@ -225,7 +242,9 @@ def test_insite_api_other_errors(
             api_obj.run()
 
 
-def test_insite_api_stop(logger, fake_api_request_package, fake_json) -> None:
+def test_insite_api_stop(
+    logger, fake_aou_package, fake_json, mock_gcloud_check_output, mock_gcloud_run
+) -> None:
     def on_auth_completion(progress: bool | int | str) -> None:
         if isinstance(progress, bool):
             logger.info("Authorization complete.")
@@ -237,13 +256,12 @@ def test_insite_api_stop(logger, fake_api_request_package, fake_json) -> None:
             logger.info(progress)
 
     api_obj: InSiteAPI = InSiteAPI(
-        api_package=fake_api_request_package,
+        aou_package=fake_aou_package,
         log=logger,
         report_fn=on_auth_completion,
     )
     assert isinstance(api_obj, InSiteAPI)
 
-    fake_aou_package: AouPackage = fake_api_request_package.aou_package
     fake_url: str = (
         fake_aou_package.endpoint
         + "?_sort=lastModified&_includeTotal=TRUE&_count=1000&awardee="
@@ -268,7 +286,12 @@ def test_insite_api_stop(logger, fake_api_request_package, fake_json) -> None:
 
 
 def test_insite_api_timeouts(
-    logger, fake_api_request_package, fake_json, fake_data_directory
+    logger,
+    fake_aou_package,
+    fake_json,
+    fake_data_directory,
+    mock_gcloud_check_output,
+    mock_gcloud_run,
 ) -> None:
     def on_auth_completion(progress: bool | int | str) -> None:
         if isinstance(progress, bool):
@@ -279,13 +302,12 @@ def test_insite_api_timeouts(
             logger.info(progress)
 
     api_obj: InSiteAPI = InSiteAPI(
-        api_package=fake_api_request_package,
+        aou_package=fake_aou_package,
         log=logger,
         report_fn=on_auth_completion,
     )
     assert isinstance(api_obj, InSiteAPI)
 
-    fake_aou_package: AouPackage = fake_api_request_package.aou_package
     fake_url: str = (
         fake_aou_package.endpoint
         + "?_sort=lastModified&_includeTotal=TRUE&_count=1000&awardee="

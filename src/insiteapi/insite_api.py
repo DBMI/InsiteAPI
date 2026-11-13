@@ -9,13 +9,13 @@ import logging
 import os
 import threading
 import time
-from collections import namedtuple
 from collections.abc import Callable
 from pathlib import Path
 
 import requests
 
 from insiteapi.aou_package import AouPackage
+from insiteapi.gcloud_tools import GCloudTools
 from insiteapi.progress import Progress
 
 
@@ -66,11 +66,12 @@ class InSiteAPI(threading.Thread):
 
     Parameters
     ----------
-    self.__api_package
+    self.__aou_package
     self.data
     self.__official_header
     self.__report_fn
     self.__stop_event
+    self.__token
 
     Methods
     ---------
@@ -80,7 +81,7 @@ class InSiteAPI(threading.Thread):
 
     def __init__(
         self,
-        api_package: namedtuple,
+        aou_package: AouPackage,
         log: logging.Logger,
         report_fn: Callable[[str], None] | None = None,
     ):
@@ -88,7 +89,7 @@ class InSiteAPI(threading.Thread):
 
         Parameters
         ----------
-        api_package: namedtuple     Contains the token file name, awardee & endpoint info
+        aou_package: AouPackage     Contains variables needed to request participant data.
         log: logging.Logger
         report_fn: Callable         Optional Tell something to calling function
         """
@@ -97,7 +98,7 @@ class InSiteAPI(threading.Thread):
         self.__stop_event: threading.Event = threading.Event()
 
         # Everything we'll need to make request.
-        self.__api_package: namedtuple = api_package
+        self.__aou_package: AouPackage = aou_package
 
         # Property used to record results.
         self.__data: dict = {}
@@ -114,6 +115,36 @@ class InSiteAPI(threading.Thread):
 
         # Status
         self.__progress: Progress = Progress()
+
+        # Instantiate the GCloud Tool object we'll need.
+        self.__log.info("Instantiating the GCloudTools object.")
+        self.__gcloud_mgr: GCloudTools = GCloudTools(
+            aou_package=self.__aou_package,
+            log=self.__log,
+            status_fn=self.__auth_report,
+        )
+
+        # Insert dummy value in __token.
+        self.__token = ""
+
+        # Get the authorization we need.
+        self.__log.info("Getting authorization via the GCloudTools object.")
+        self.__gcloud_mgr.run()
+
+    def __auth_report(self, progress: bool | int | str) -> None:
+        """
+        Allow external method to either change status bar, gauge or report completion.
+
+        Parameters
+        ----------
+        progress: Union[bool, int, str]
+        """
+        if isinstance(progress, bool):
+            self.__on_auth_completion()
+        elif isinstance(progress, int):
+            self.__log.info(f"Progress: {int(progress)}")
+        elif isinstance(progress, str):
+            self.__log.info(f"Progress: {progress!s}")
 
     def __build_line(self, d: dict) -> list:
         """
@@ -249,6 +280,12 @@ class InSiteAPI(threading.Thread):
 
         return ps_data
 
+    def __on_auth_completion(self) -> None:
+        """
+        Event handler for when GCloud thread completes.
+        """
+        self.__token = self.__gcloud_mgr.get_token()
+
     def output_data(self, data_directory: str) -> None:
         """
         Produces .csv files from extracted data.
@@ -359,19 +396,9 @@ class InSiteAPI(threading.Thread):
 
         return ps_data
 
-    def run(self, return_data: bool = False) -> dict | None:
+    def run(self) -> None:
         """
-        Request data from AwardeeInSite API.
-
-        Parameters
-        ----------
-        return_data: bool Normally False
-            when True, returns data: dict by organization
-            when False: Saves result in internal variable: self.data: dict by organization
-
-        Returns
-        -------
-            when return_data is True, returns data: dict by organization
+        Request data from AwardeeInSite API; creates data: dict by organization
         """
         self.__log.info("Starting InSite API object running.")
 
@@ -380,10 +407,10 @@ class InSiteAPI(threading.Thread):
 
         headers: dict = {
             "content-type": "application/json",
-            "Authorization": f"Bearer {self.__api_package.token}",
+            "Authorization": f"Bearer {self.__token}",
         }
 
-        aou_package: AouPackage = self.__api_package.aou_package
+        aou_package: AouPackage = self.__aou_package
         next_url: str | None = (
             f"{aou_package.endpoint}?_sort=lastModified&_includeTotal=TRUE"
             f"&_count={num_rows_per_page}&awardee={aou_package.awardee}"
@@ -407,9 +434,6 @@ class InSiteAPI(threading.Thread):
 
         # Let calling function know we're done.
         self.__report_completion()
-
-        if return_data:
-            return self.__data
 
     def stop(self) -> None:
         """
