@@ -44,7 +44,7 @@ def getoutput(cmd: str) -> list[str]:
 
     Returns
     -------
-    output: str
+    output: list[str]
     """
 
     try:
