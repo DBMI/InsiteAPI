@@ -3,53 +3,17 @@ Tests methods related to class InsiteAPI
 """
 
 import csv
+import logging
 import os
+import sys
+from pathlib import Path
 
 import pytest
 import requests
 import requests_mock
 
-from src.insiteapi.insite_api import InSiteAPI, join_headers, make_header
-
-
-def test_join_headers() -> None:
-    h1: list[str] = ["A", "B", "C"]
-    h2: list[str] = ["D", "E", "F"]
-    h_joined: list[str] = join_headers(h1, h2)
-    assert isinstance(h_joined, list)
-    assert len(h_joined) == 6
-    assert "A" in h_joined
-    assert "B" in h_joined
-    assert "C" in h_joined
-    assert "D" in h_joined
-    assert "E" in h_joined
-    assert "F" in h_joined
-
-    # Corner cases
-    h_joined = join_headers(h1, [])
-    assert isinstance(h_joined, list)
-    assert len(h_joined) == 3
-
-    h_joined = join_headers([], h2)
-    assert isinstance(h_joined, list)
-    assert len(h_joined) == 3
-
-    h_joined = join_headers([], [])
-    assert isinstance(h_joined, list)
-    assert len(h_joined) == 0
-
-
-def test_make_header() -> None:
-    d: dict = {"A": 1, "B": 2, "C": 3, "D": 4, "E": 5, "F": 6}
-    h: list[str] = make_header(d)
-    assert isinstance(h, list)
-    assert len(h) == 6
-    assert "A" in h
-    assert "B" in h
-    assert "C" in h
-    assert "D" in h
-    assert "E" in h
-    assert "F" in h
+from src.insiteapi.aou_package import AouPackage
+from src.insiteapi.insite_api import InSiteAPI
 
 
 def test_insite_api(
@@ -331,3 +295,181 @@ def test_insite_api_timeouts(
 
         with pytest.raises(RuntimeError):
             api_obj.run()
+
+
+if __name__ == "__main__":
+    # Set up logger for use with test methods.
+    right_here: str = os.path.dirname(__file__)
+
+    if not "tests" in right_here:
+        right_here = str(Path(right_here) / "tests")
+
+    log_filename: str = str(Path(right_here) / "testing.log")
+
+    my_logger: logging.Logger = logging.getLogger(log_filename)
+
+    # Logging to console
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_format = logging.Formatter(
+        "%(module)s - %(levelname)s - %(funcName)s - %(message)s"
+    )
+    console_handler.setFormatter(console_format)
+    my_logger.addHandler(console_handler)
+
+    # Logging to a file
+    logfile_format = logging.Formatter(
+        fmt="%(asctime)s - %(module)s - %(levelname)s - %(funcName)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+    logfile_handler = logging.FileHandler(log_filename)
+    logfile_handler.setFormatter(logfile_format)
+    my_logger.addHandler(logfile_handler)
+    my_logger.setLevel(logging.DEBUG)
+
+    # Copy a real config file.
+    config_file_real: str = str(Path(os.path.dirname(__file__)) / "config_real.ini")
+
+    if not os.path.exists(config_file_real):
+        pytest.fail(f"Missing real config file '{config_file_real}'")
+
+    ap: AouPackage = AouPackage(log=my_logger, config_file=config_file_real)
+
+    fj: dict = {
+        "resourceType": "Bundle",
+        "total": 4,
+        "entry": [
+            {
+                "resource": {
+                    "organization": "FakeUniversity",
+                    "patientName": "Ima Patient",
+                    "city": "San Diego",
+                    "state": "CA",
+                }
+            },
+            {
+                "resource": {
+                    "organization": "FakeUniversity",
+                    "patientName": "Youda Patient",
+                    "city": "Silver City",
+                    "state": "CA",
+                }
+            },
+            {
+                "resource": {
+                    "organization": "",
+                    "patientName": "Ahma Patient",
+                    "city": "UNSET",
+                    "state": "CA",
+                }
+            },
+            {
+                "resource": {
+                    "organization": "",
+                    "patientName": "Alma Patient",
+                    "city": "Salmon City",
+                    "state": "CA",
+                }
+            },
+        ],
+    }
+
+    fdd: str = str(Path(right_here) / "test_data")
+    fjI: dict = {
+        "resourceType": "Bundle",
+        "total": 2,
+        "entry": [
+            {
+                "resource": {
+                    "organization": "FakeUniversity",
+                    "patientName": "Ima Patient",
+                    "city": "San Diego",
+                    "state": "CA",
+                }
+            },
+            {
+                "resource": {
+                    "organization": "FakeUniversity",
+                    "patientName": "Youda Patient",
+                    "city": "Silver City",
+                    "state": "CA",
+                }
+            },
+        ],
+    }
+    fjII: dict = {
+        "resourceType": "Bundle",
+        "total": 2,
+        "entry": [
+            {
+                "resource": {
+                    "organization": "",
+                    "patientName": "Ahma Patient",
+                    "city": "UNSET",
+                    "state": "CA",
+                }
+            },
+            {
+                "resource": {
+                    "organization": "",
+                    "patientName": "Alma Patient",
+                    "city": "Salmon City",
+                    "state": "CA",
+                }
+            },
+        ],
+    }
+    fjnt: dict = {
+        "resourceType": "Bundle",
+        "entry": [
+            {
+                "resource": {
+                    "organization": "FakeUniversity",
+                    "patientName": "Ima Patient",
+                    "city": "San Diego",
+                    "state": "CA",
+                }
+            },
+            {
+                "resource": {
+                    "patientName": "Whooda Patient",
+                    "city": "Silverado",
+                    "state": "CA",
+                }
+            },
+        ],
+    }
+
+    my_logger.info("*** test_insite_api ***")
+    test_insite_api(
+        logger=my_logger,
+        real_aou_package=ap,
+        fake_json_I=fjI,
+        fake_json_II=fjII,
+        fake_data_directory=fdd,
+    )
+
+    my_logger.info("*** test_insite_api_malformed_json ***")
+    test_insite_api_malformed_json(
+        logger=my_logger, real_aou_package=ap, fake_json=fj, fake_data_directory=fdd
+    )
+
+    my_logger.info("*** test_insite_api_no_report_fn ***")
+    test_insite_api_no_report_fn(
+        logger=my_logger,
+        real_aou_package=ap,
+        fake_json_no_total=fjnt,
+        fake_data_directory=fdd,
+    )
+
+    my_logger.info("*** test_insite_api_pther_errors ***")
+    test_insite_api_other_errors(
+        logger=my_logger, real_aou_package=ap, fake_json=fj, fake_data_directory=fdd
+    )
+
+    my_logger.info("*** test_insite_api_stop ***")
+    test_insite_api_stop(logger=my_logger, real_aou_package=ap, fake_json=fj)
+
+    my_logger.info("*** test_insite_api_timeouts ***")
+    test_insite_api_timeouts(
+        logger=my_logger, real_aou_package=ap, fake_json=fj, fake_data_directory=fdd
+    )
