@@ -121,7 +121,7 @@ class InSiteAPI(threading.Thread):
         self.__gcloud_mgr: GCloudTools = GCloudTools(
             aou_package=self.__aou_package,
             log=self.__log,
-            status_fn=self.__auth_report,
+            status_fn=self.__report_fn,
         )
 
         # Insert dummy value in __token.
@@ -130,21 +130,6 @@ class InSiteAPI(threading.Thread):
         # Get the authorization we need.
         self.__log.info("Getting authorization via the GCloudTools object.")
         self.__gcloud_mgr.run()
-
-    def __auth_report(self, progress: bool | int | str) -> None:
-        """
-        Allow external method to either change status bar, gauge or report completion.
-
-        Parameters
-        ----------
-        progress: Union[bool, int, str]
-        """
-        if isinstance(progress, bool):
-            self.__on_auth_completion()
-        elif isinstance(progress, int):
-            self.__log.info(f"Progress: {int(progress)}")
-        elif isinstance(progress, str):
-            self.__log.info(f"Progress: {progress!s}")
 
     def __build_line(self, d: dict) -> list:
         """

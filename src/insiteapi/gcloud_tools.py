@@ -201,9 +201,11 @@ class GCloudTools(threading.Thread):
 
         if not results.startswith("created key"):
             if self.__status_fn is not None:
-                self.__status_fn(f"Unable to create key file: {results}")
+                self.__status_fn(
+                    "Unable to create key file. Try running `gcloud auth login` in a terminal window."
+                )
 
-            self.__log.exception("Unable to create key file: %s", results)
+            self.__log.error("Unable to create key file: %s", results)
             raise RuntimeError(f"Unable to create key file: {results}")
 
     def get_token(self) -> str:
