@@ -175,6 +175,7 @@ class InSiteAPI(threading.Thread):
         session: requests.Session = requests.Session()
         session.mount("http://", source_adapter)
         session.mount("https://", source_adapter)
+        return session
 
     def __extract_organization_data(self, resource: dict) -> None:
         """
