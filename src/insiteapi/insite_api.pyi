@@ -22,6 +22,7 @@ class InSiteAPI(threading.Thread):
     __log: logging.Logger = None
     __official_header: list = None
     __report_fn: Callable[str] | None = None
+    __session: requests.session = None
     __stop_event: threading.Event = None
     __progress: Progress = None
     __token: str = None
@@ -33,6 +34,7 @@ class InSiteAPI(threading.Thread):
         report_fn: Callable[str] | None,
     ) -> None: ...
     def __build_line(self, d: dict) -> list: ...
+    def __create_session(self) -> requests.sessions: ...
     def __extract_organization_data(self, resource: dict) -> None: ...
     def __handle_timeouts(
         self,

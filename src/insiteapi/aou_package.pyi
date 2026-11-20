@@ -18,6 +18,7 @@ class AouPackage:
     __config: ConfigParser = None
     data_directory: str = None
     endpoint: str = None
+    ip_address_you_want_to_look_like: str = None
     __log: Logger = None
     pmi_account: str = None
     project: str = None
