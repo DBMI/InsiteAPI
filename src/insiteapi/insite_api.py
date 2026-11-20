@@ -398,10 +398,10 @@ class InSiteAPI(threading.Thread):
             ):
                 self.__log.debug(f"Total records: {ps_data['total']}")
                 self.__progress.set(ps_data["total"])
-        except requests.exceptions.RequestException:
+        except requests.exceptions.RequestException as error:
             # We didn't even get a valid response.
-            self.__log.error("Error: API request failed. Exiting.")
-            raise RuntimeError("Error: API request failed. Exiting.")
+            self.__log.error(f"Error: API request failed: {error!s}. Exiting.")
+            raise RuntimeError("Error: API request failed. Exiting.") from error
 
         return ps_data
 
