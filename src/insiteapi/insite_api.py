@@ -13,7 +13,6 @@ from collections.abc import Callable
 from pathlib import Path
 
 import requests
-from requests_toolbelt.adapters import source
 
 from insiteapi.aou_package import AouPackage
 from insiteapi.gcloud_tools import GCloudTools
@@ -111,9 +110,6 @@ class InSiteAPI(threading.Thread):
         # Variables developed in request_list() to be used in output_data().
         self.__official_header: list = []
 
-        # Using a requests.session object so we can choose the IP address from which our requests seem to come.
-        self.__session: requests.sessions = self.__create_session()
-
         # We can use these to report to calling function how & what we're doing.
         self.__report_fn: Callable = report_fn
 
@@ -160,22 +156,6 @@ class InSiteAPI(threading.Thread):
                 line.append("")  # pragma: no cover
 
         return line
-
-    def __create_session(self) -> requests.sessions:
-        """
-        Create Session object for reuse.
-
-        Returns
-        -------
-        session: requests.Session object
-        """
-        source_adapter: source.SourceAddressAdapter = source.SourceAddressAdapter(
-            self.__aou_package.ip_address_you_want_to_look_like
-        )
-        session: requests.Session = requests.Session()
-        session.mount("http://", source_adapter)
-        session.mount("https://", source_adapter)
-        return session
 
     def __extract_organization_data(self, resource: dict) -> None:
         """
@@ -245,8 +225,7 @@ class InSiteAPI(threading.Thread):
                 time.sleep(30)
 
                 try:
-                    # resp = requests.get(next_url, headers=headers, timeout=60)
-                    resp = self.__session.get(next_url, headers=headers, timeout=60)
+                    resp = requests.get(next_url, headers=headers, timeout=60)
                 except requests.exceptions.RequestException:
                     self.__log.error("API request failed. Exiting.")
 
@@ -372,10 +351,7 @@ class InSiteAPI(threading.Thread):
         self.__log.debug(f"Requesting {next_url}")
 
         try:
-            # resp: requests.Response = requests.get(
-            #     next_url, headers=headers, timeout=30
-            # )
-            resp: requests.Response = self.__session.get(
+            resp: requests.Response = requests.get(
                 next_url, headers=headers, timeout=30
             )
 
@@ -440,9 +416,6 @@ class InSiteAPI(threading.Thread):
                 self.__extract_organization_data(resource)
 
             next_url = self.__update_url(ps_data)
-
-        # Close the session object.
-        self.__session.close()
 
         # Let calling function know we're done.
         self.__report_completion()
