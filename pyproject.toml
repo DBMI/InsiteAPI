@@ -1,6 +1,6 @@
 [project]
 name = "insiteapi"
-version = "0.4.2"
+version = "0.4.3"
 description = "Python library to request All of Us participant data from the National Institutes of Health web service."
 authors = [
     {name = "Kevin J. Delaney",email = "kjdelaney@health.ucsd.edu"}
@@ -33,6 +33,7 @@ python-dateutil = "3.0.0"
 pywin32 = { version = "^312", markers = "sys_platform == 'win32'" }
 pywin32-ctypes = "0.2.3"
 requests = "2.34.2"
+requests-toolbelt = "1.0.0"
 urllib3 = "2.5.0"
 
 [tool.poetry.group.dev.dependencies]

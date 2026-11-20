@@ -119,6 +119,7 @@ class AouPackage:
         self.awardee: str = self.__config["AoU"]["awardee"]
         self.data_directory: str = self.__config["InSite API"]["data_directory"]
         self.endpoint: str = self.__config["AoU"]["endpoint"]
+        self.ip_address_you_want_to_look_like: str = "137.110.216.229"
         self.pmi_account: str = self.__config["Logon"]["pmi_account"]
         self.project: str = self.__config["Logon"]["project"]
         self.token_file: str = self.__config["Logon"]["token_file"]
