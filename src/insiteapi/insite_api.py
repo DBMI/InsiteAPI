@@ -211,7 +211,7 @@ class InSiteAPI(threading.Thread):
                 else "Unknown status"
             )
             resp_text = (
-                resp.text
+                resp.text.rstrip("\n")
                 if isinstance(resp, requests.Response) and resp.text
                 else "Unknown error"
             )
@@ -256,12 +256,18 @@ class InSiteAPI(threading.Thread):
                 )
             else:
                 # It's some other code--not likely to be fixed with another attempt.
-                self.__log.error(f"Status code: {status_code}: {resp_text}.")
+                self.__log.error(
+                    f"At URL: {next_url}. Status code: {status_code}: {resp_text}."
+                )
 
                 if self.__report_fn is not None:
-                    self.__report_fn(f"Status code: {status_code}: {resp_text}.")
+                    self.__report_fn(
+                        f"At URL: {next_url}. Status code: {status_code}: {resp_text}."
+                    )
 
-                raise RuntimeError(f"Status code: {status_code}: {resp_text}.")
+                raise RuntimeError(
+                    f"At URL: {next_url}. Status code: {status_code}: {resp_text}."
+                )
 
         return ps_data
 
